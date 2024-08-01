@@ -1,7 +1,19 @@
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 
-import { GlobalWorkerOptions, OnProgressParameters, getDocument, type PDFDocumentLoadingTask, type PDFDocumentProxy } from "pdfjs-dist";
-import { DocumentInitParameters, TypedArray } from "pdfjs-dist/types/src/display/api";
+import {
+  GlobalWorkerOptions,
+  OnProgressParameters,
+  getDocument,
+  type PDFDocumentLoadingTask,
+  type PDFDocumentProxy,
+} from "pdfjs-dist";
+import {
+  DocumentInitParameters,
+  TypedArray,
+} from "pdfjs-dist/types/src/display/api";
+
+// Get the version of pdfjs-dist we are using so that the default worker source can be set to match.
+import { version } from "pdfjs-dist/build/pdf.mjs";
 
 const DEFAULT_BEFORE_LOAD = (progress: OnProgressParameters) => (
   <div style={{ color: "black" }}>
@@ -17,8 +29,8 @@ const DEFAULT_ON_ERROR = (error: Error) => {
   throw new Error(`Error loading PDF document: ${error.message}!`);
 };
 
-const DEFAULT_WORKER_SRC =
-  "https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
+// Version defaults to the version of pdfjs-dist we have installed.
+const DEFAULT_WORKER_SRC = `https://unpkg.com/pdfjs-dist@${version}/build/pdf.worker.min.mjs-asdfasdf`;
 
 /**
  * The props type for {@link PdfLoader}.
@@ -128,6 +140,6 @@ export const PdfLoader = ({
   return error
     ? errorMessage(error)
     : loadingProgress
-      ? beforeLoad(loadingProgress)
-      : pdfDocumentRef.current && children(pdfDocumentRef.current);
+    ? beforeLoad(loadingProgress)
+    : pdfDocumentRef.current && children(pdfDocumentRef.current);
 };
