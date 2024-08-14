@@ -2,28 +2,62 @@ import { PDFViewer } from "pdfjs-dist/types/web/pdf_viewer";
 import type { LTWHP, ViewportPosition, Scaled, ScaledPosition } from "../types";
 import { PageViewport } from "pdfjs-dist";
 
-interface WIDTH_HEIGHT {
-  width: number;
-  height: number;
-}
 
 /** @category Utilities */
 export const viewportToScaled = (
   rect: LTWHP,
-  { width, height }: WIDTH_HEIGHT,
+  viewport: PageViewport
 ): Scaled => {
-  return {
-    x1: rect.left,
-    y1: rect.top,
 
-    x2: rect.left + rect.width,
-    y2: rect.top + rect.height,
+  const {width, height, rotation} = viewport;
 
-    width,
-    height,
+  if (rotation === 0) {
+    return {
+      x1: rect.left,
+      y1: rect.top,
+      x2: rect.left + rect.width,
+      y2: rect.top + rect.height,
+      width,
+      height,
+      pageNumber: rect.pageNumber,
+    };
+  }
+  if (rotation === 90) {
+    return {
+      x1: width - rect.height - rect.top,
+      x2: width - rect.top,
+      y1: rect.left,
+      y2: rect.left + rect.width,
+      width,
+      height,
+      pageNumber: rect.pageNumber,
+    };
+  }
+  if (rotation === 180) {
+    return  {
+      x1: width - rect.left - rect.width,
+      x2: width - rect.left,
+      y1: height - rect.top - rect.height,
+      y2: height - rect.top,
+      width,
+      height,
+      pageNumber: rect.pageNumber,
+    };
+  }
 
-    pageNumber: rect.pageNumber,
-  };
+  if (rotation === 270) {
+    return {
+      x1: rect.top,
+      x2: rect.top + rect.height,
+      y1: height - rect.left - rect.width,
+      y2: height - rect.left,
+      width,
+      height,
+      pageNumber: rect.pageNumber,
+    };
+  }
+
+  throw new Error(`Unsupported page rotation: ${rotation}`)
 };
 
 /** @category Utilities */
@@ -82,11 +116,44 @@ export const scaledToViewport = (
   const x2 = (width * scaled.x2) / scaled.width;
   const y2 = (height * scaled.y2) / scaled.height;
 
+  const rotation = viewport.rotation;
+
+  let rotated;
+  if (rotation === 0) {
+    rotated = {x1, y1, x2, y2};
+
+  } else if (rotation === 90) {
+    rotated = {
+      x1: y1,
+      x2: y2,
+      y1: width - x2,
+      y2: width - x1,
+    };
+
+  } else if (rotation === 180) {
+    rotated = {
+      x1: width - x2,
+      x2: width - x1,
+      y1: height - y2,
+      y2: height - y1,
+    };
+
+  } else if (rotation === 270) {
+    rotated = {
+      x1: height - y2,
+      x2: height - y1,
+      y1: x1,
+      y2: x2,
+    };
+
+  } else {
+    throw new Error(`Unsupported rotation: ${rotation}`);
+  }
   return {
-    left: x1,
-    top: y1,
-    width: x2 - x1,
-    height: y2 - y1,
+    left: rotated.x1,
+    top: rotated.y1,
+    width: rotated.x2 - rotated.x1,
+    height: rotated.y2 - rotated.y1,
     pageNumber: scaled.pageNumber,
   };
 };
