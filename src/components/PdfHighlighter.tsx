@@ -400,6 +400,7 @@ export const PdfHighlighter = ({
         const { textLayer } =
           viewerRef.current!.getPageView(pageNumber - 1) || {};
         if (!textLayer) continue; // Viewer hasn't rendered page yet
+        if (!textLayer.div) continue;
 
         // textLayer.div for version >=3.0 and textLayer.textLayerDiv otherwise.
         const highlightLayer = findOrCreateHighlightLayer(

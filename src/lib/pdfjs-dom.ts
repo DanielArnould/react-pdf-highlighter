@@ -71,18 +71,43 @@ export const getPagesFromRange = (range: Range): Page[] => {
   return pages as Page[];
 };
 
+
+/**
+ * Create a container element we can use for highlights.
+ * The original textLayer will be rotated by CSS to match
+ * the rotation of individual PDF pages - this is not desired.
+ * To keep our highlights independent of text rotation
+ * we add a dedicated div to hold our annotations as a sibling.
+ * The main styling is copied over, but we omit the
+ * `data-main-rotation` attribute to keep our container div
+ * from being rotated.
+ *
+ * @param container The original textLayer div from PDF.js
+ */
 export const findOrCreateContainerLayer = (
   container: HTMLElement,
   className: string,
 ) => {
-  const doc = getDocument(container);
-  let layer = container.querySelector(`.${className}`);
+  // Grab the parent - same div that hold the textLayer
+  let pageDiv = container.parentElement;
+  if (pageDiv === null) {
+    return null;
+  }
 
-  // To ensure predictable zIndexing, wait until the pdfjs element has children.
-  if (!layer && container.children.length) {
+  const doc = getDocument(container);
+  let layer = pageDiv.querySelector(`.${className}`);
+
+  // TODO: There used to be concern about z-indexing
+  //       here when adding to textLayer div, still relevant?
+  if (!layer) {
     layer = doc.createElement("div");
-    layer.className = className;
-    container.appendChild(layer);
+    // Add the PDF.js textLayer class to get styled similarly
+    layer.className = `${className} textLayer`;
+
+    // TODO: Is this needed or purely for rotation?
+    //layer.style.cssText = container.style.cssText;
+
+    pageDiv.appendChild(layer);
   }
 
   return layer;
