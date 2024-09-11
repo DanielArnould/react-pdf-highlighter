@@ -105,7 +105,7 @@ export const HighlightLayer = ({
         };
 
         return (
-          <HighlightContext.Provider value={highlightUtils} key={index}>
+          <HighlightContext.Provider value={highlightUtils} key={`${viewportHighlight.id}-${index}`}>
             {children}
           </HighlightContext.Provider>
         );
