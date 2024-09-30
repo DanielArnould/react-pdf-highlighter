@@ -57,6 +57,7 @@ let EventBus: typeof TEventBus, PDFLinkService: typeof TPDFLinkService, PDFViewe
 
 const SCROLL_MARGIN = 10;
 const DEFAULT_SCALE_VALUE = "auto";
+const DEFAULT_PAGE_NUMBER = 1;
 const DEFAULT_TEXT_SELECTION_COLOR = "rgba(153,193,218,255)";
 
 const findOrCreateHighlightLayer = (textLayer: HTMLElement) => {
@@ -92,6 +93,11 @@ export interface PdfHighlighterProps {
    * What scale to render the PDF at inside the viewer.
    */
   pdfScaleValue?: PdfScaleValue;
+
+  /**
+   * What page number to render the PDF at inside the viewer.
+   */
+  pdfPageNumber?: number;
 
   /**
    * Callback triggered whenever a user finishes making a mouse selection or has
@@ -182,6 +188,7 @@ export const PdfHighlighter = ({
   highlights,
   onScrollAway,
   pdfScaleValue = DEFAULT_SCALE_VALUE,
+  pdfPageNumber = DEFAULT_PAGE_NUMBER,
   onSelection: onSelectionFinished,
   onCreateGhostHighlight,
   onRemoveGhostHighlight,
@@ -252,19 +259,24 @@ export const PdfHighlighter = ({
   useLayoutEffect(() => {
     if (!containerNodeRef.current) return;
 
-    resizeObserverRef.current = new ResizeObserver(handleScaleValue);
+    resizeObserverRef.current = new ResizeObserver(() => {
+      handleScaleValue();
+      handlePageNumber();
+    });
     resizeObserverRef.current.observe(containerNodeRef.current);
 
     const doc = containerNodeRef.current.ownerDocument;
 
     eventBusRef.current.on("textlayerrendered", renderHighlightLayers);
     eventBusRef.current.on("pagesinit", handleScaleValue);
+    eventBusRef.current.on("pagesinit", handlePageNumber);
     doc.addEventListener("keydown", handleKeyDown);
 
     renderHighlightLayers();
 
     return () => {
       eventBusRef.current.off("pagesinit", handleScaleValue);
+      eventBusRef.current.off("pagesinit", handlePageNumber);
       eventBusRef.current.off("textlayerrendered", renderHighlightLayers);
       doc.removeEventListener("keydown", handleKeyDown);
       resizeObserverRef.current?.disconnect();
@@ -354,6 +366,12 @@ export const PdfHighlighter = ({
       clearTextSelection();
       removeGhostHighlight();
       setTip(null);
+    }
+  };
+
+  const handlePageNumber = () => {
+    if (viewerRef.current) {
+      viewerRef.current.currentPageNumber = pdfPageNumber;
     }
   };
 
