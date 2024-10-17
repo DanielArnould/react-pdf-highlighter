@@ -464,7 +464,14 @@ export const PdfHighlighter = ({
     selection.removeAllRanges();
   };
 
-  const scrollToHighlight = (highlight: Highlight) => {
+  /**
+   * Scrolls to a highlight and highlights it with TextHighlight__part style. 
+   * Removes the scroll listener and re-adds it after the highlight is scrolled to after a specified timeout.
+   * 
+   * @param highlight - The highlight to scroll to.
+   * @param scrollListenerTimeout - The timeout for the scroll listener.
+   */
+  const scrollToHighlight = (highlight: Highlight, scrollListenerTimeout = 100) => {
     const { boundingRect, usePdfCoordinates } = highlight.position;
     const pageNumber = boundingRect.pageNumber;
 
@@ -497,7 +504,7 @@ export const PdfHighlighter = ({
       viewerRef.current!.container.addEventListener("scroll", handleScroll, {
         once: true,
       });
-    }, 100);
+    }, scrollListenerTimeout);
   };
 
   const pdfHighlighterUtils: PdfHighlighterUtils = {
