@@ -57,11 +57,13 @@ export type PdfHighlighterUtils = {
 
   /**
    * Scroll to a highlight in this viewer.
-   *
+   * Removes the scroll listener during scrolling and re-adds it after the highlight is scrolled to after a specified timeout.
+   * 
    * @param highlight - A highlight provided to the {@link PdfHighlighter} to
    * scroll to.
+   * @param scrollListenerTimeout - The timeout for the scroll listener.
    */
-  scrollToHighlight(highlight: Highlight): void;
+  scrollToHighlight(highlight: Highlight, scrollListenerTimeout?: number): void;
 
   /**
    * Get a reference to the currently used instance of a PDF Viewer.
