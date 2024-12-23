@@ -5,25 +5,29 @@ type GroupedHighlights = {
 };
 
 const groupHighlightsByPage = (
-  highlights: Array<Highlight | GhostHighlight | null>,
+  highlights: Array<Highlight | GhostHighlight | null>
 ): GroupedHighlights =>
   highlights.reduce<GroupedHighlights>((acc, highlight) => {
     if (!highlight) {
       return acc;
     }
+
     const pageNumbers = [
       highlight.position.boundingRect.pageNumber,
       ...highlight.position.rects.map((rect) => rect.pageNumber || 0),
     ];
 
-    pageNumbers.forEach((pageNumber) => {
+    // remove potential duplicate page numbers from text highlights
+    const uniquePageNumbers = new Set(pageNumbers);
+
+    uniquePageNumbers.forEach((pageNumber) => {
       acc[pageNumber] ||= [];
       const pageSpecificHighlight = {
         ...highlight,
         position: {
           ...highlight.position,
           rects: highlight.position.rects.filter(
-            (rect) => pageNumber === rect.pageNumber,
+            (rect) => pageNumber === rect.pageNumber
           ),
         },
       };
